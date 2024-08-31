@@ -4,7 +4,9 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.everymind.dto.ProdutoDTO;
+import com.everymind.model.Produto;
+import com.everymind.repository.ProdutoRepository;
 import com.everymind.service.ProdutoService;
 
 import lombok.AllArgsConstructor;
@@ -27,6 +31,8 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/produtos")
 public class ProdutoController {
 
+	private ProdutoRepository produtoRepository;
+	
 	private ProdutoService produtoService;
 
 	@GetMapping
@@ -61,6 +67,17 @@ public class ProdutoController {
 	public void delete(@PathVariable Long id) {
 
 		produtoService.delete(id);
+	}
+	
+	@GetMapping("/produtoPorNome/{nome}")
+	@CachePut("cacheusuarios")
+	public ResponseEntity<List<Produto>> produtoPorNome(@PathVariable("nome") String nome)
+			throws InterruptedException {
+
+		List<Produto> list = (List<Produto>) produtoRepository.findUserByNome(nome);
+
+		return new ResponseEntity<List<Produto>>(list, HttpStatus.OK);
+
 	}
 
 }
